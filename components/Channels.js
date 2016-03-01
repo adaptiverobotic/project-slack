@@ -1,7 +1,31 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
 
+var Modal = require('react-modal');
+const modalStyle = {
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)'
+  }
+};
+
 var Channels = React.createClass({
+  getInitialState: function() {
+    return { modalIsOpen: false };
+  },
+
+  openModal: function() {
+    this.setState({modalIsOpen: true});
+  },
+
+  closeModal: function() {
+    this.setState({modalIsOpen: false});
+  },
+
   render: function() {
     var channelList = this.props.channels.map(function(channel, i){
       return  (
@@ -16,10 +40,21 @@ var Channels = React.createClass({
 
     return (
         <div className="listings_channels">
-            <h2 className="listings_header">Channels</h2>
+            <span className="add_icon" onClick={this.openModal}>+</span> <h2 className="listings_header">Channels </h2>
             <ul className="channel_list">
                 {channelList}
             </ul>
+
+            <Modal 
+              isOpen={this.state.modalIsOpen}
+              onRequestClose={this.closeModal}
+              style={modalStyle}>
+              <h2 className="text-center">Enter a channel to join</h2>
+                <div>
+                  # <input id="new-channel-name" type="text"/>
+                  <button className="btn" >Join</button>
+                </div>
+            </Modal>
         </div>
     )
   }
