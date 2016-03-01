@@ -40,17 +40,24 @@ var Channels = React.createClass({displayName: "Channels",
     this.joinNewChannel();
   },
 
+  switchChannel: function(channelName) {
+    this.props.joinChannel(channelName);
+  },
+
   render: function() {
-    var channelList = this.props.channels.map(function(channel, i){
-      return  (
-        React.createElement("li", {key: i, className: "channel active"}, 
+    var currentChannel = this.props.currentChannel;
+    var channelList = [];
+    for (i=0; i < this.props.channels.length; i++ ) {
+      var channel = this.props.channels[i];
+      channelList.push(
+        React.createElement("li", {key: channel, className: channel===  currentChannel ? 'channel active' : 'channel', onClick: this.switchChannel.bind(this, channel)}, 
             React.createElement("a", {className: "channel_name"}, 
                 React.createElement("span", {className: "unread"}, "0"), 
                 React.createElement("span", null, React.createElement("span", {className: "prefix"}, "#"), channel)
             )
         )
       )
-    });
+    }
 
     return (
         React.createElement("div", {className: "listings_channels"}, 
@@ -109,6 +116,7 @@ var Chat = React.createClass({displayName: "Chat",
         time: new Date(),
         text: 'Welcome to your chat app'
       }],
+      currentChannel: 'general'
     }
   },
 
@@ -130,11 +138,16 @@ var Chat = React.createClass({displayName: "Chat",
     }
   },
 
-  createChannel: function(channelName){
+  createChannel: function(channelName) {
     if (!(channelName in this.state.channels)) {
       // Add new channel, if it doesn't exist yet
       this.setState({ channels: this.state.channels.concat(channelName)});
+      this.joinChannel(channelName);
     }
+  },
+
+  joinChannel: function(channelName) {
+    this.setState({ currentChannel: channelName});
   },
 
   enterName: function(event){
@@ -176,7 +189,11 @@ var Chat = React.createClass({displayName: "Chat",
             ), 
             React.createElement("div", {className: "main"}, 
                 React.createElement("div", {className: "listings"}, 
-                  React.createElement(Channels, {channels: this.state.channels, createChannel: this.createChannel}), 
+                  React.createElement(Channels, {
+                    channels: this.state.channels, 
+                    currentChannel: this.state.currentChannel, 
+                    createChannel: this.createChannel, 
+                    joinChannel: this.joinChannel}), 
                   React.createElement("div", {className: "listings_direct-messages"})
                 ), 
                 React.createElement("div", {className: "message-history"}, 
