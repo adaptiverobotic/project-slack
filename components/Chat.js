@@ -94,7 +94,7 @@ var Chat = React.createClass({
   enterName: function(event){
     var newName = $('#new-name').val().trim(); 
     if (newName == "") {
-      randomId = Math.floor((Math.random() * 99999) + 1);
+      randomId = Math.floor((Math.random() * 99) + 1);
       newName = "anonymous" + randomId;
     }
 
