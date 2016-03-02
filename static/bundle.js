@@ -170,7 +170,11 @@ var Chat = React.createClass({displayName: "Chat",
   },
 
   joinChannel: function(channelName) {
-    this.setState({ currentChannel: channelName});
+    // Reset unread count
+    var channels = this.state.channels;
+    channels[channelName].unreadCount = 0
+
+    this.setState({currentChannel: channelName, channels: channels});
   },
 
   enterName: function(event){
