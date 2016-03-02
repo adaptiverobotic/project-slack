@@ -47,12 +47,12 @@ var Channels = React.createClass({displayName: "Channels",
   render: function() {
     var currentChannel = this.props.currentChannel;
     var channelList = [];
-    for (i=0; i < this.props.channels.length; i++ ) {
-      var channel = this.props.channels[i];
+    for (channel in this.props.channels) {
+      var unreadCount = this.props.channels[channel].unreadCount;
       channelList.push(
         React.createElement("li", {key: channel, className: channel===  currentChannel ? 'channel active' : 'channel', onClick: this.switchChannel.bind(this, channel)}, 
             React.createElement("a", {className: "channel_name"}, 
-                React.createElement("span", {className: "unread"}, "0"), 
+                React.createElement("span", {className: unreadCount == 0 ? 'hidden' : 'unread'}, unreadCount), 
                 React.createElement("span", null, React.createElement("span", {className: "prefix"}, "#"), channel)
             )
         )
@@ -107,7 +107,7 @@ var Chat = React.createClass({displayName: "Chat",
 
     return {
       name: null,
-      channels: [],
+      channels: {},
       messages: {},
       currentChannel: null
     }
@@ -144,19 +144,27 @@ var Chat = React.createClass({displayName: "Chat",
   createChannel: function(channelName) {
     if (!(channelName in this.state.channels)) {
       // Add new channel, if it doesn't exist yet
-      var messages = this.state.messages
-      messages[channelName] = [];
+      var messages = this.state.messages;
+      var channels = this.state.channels;
+      channels[channelName] = {unreadCount:0};
+      messages[channelName] = []
       this.setState({ 
-        channels: this.state.channels.concat(channelName),
+        channels: channels,
         messages: messages
       });
 
       this.joinChannel(channelName);
       this.chatRooms[channelName] = this.pusher.subscribe(channelName)
       this.chatRooms[channelName].bind('new_message', function(message) {
-        var messages = this.state.messages
+        var messages = this.state.messages;
+        var channels = this.state.channels;
+
         messages[channelName].push(message);
-        this.setState({messages: messages});
+        if (channelName != this.state.currentChannel) {
+          channels[channelName].unreadCount++;
+        }
+
+        this.setState({messages: messages, channels: channels});
       }, this);
     }
   },

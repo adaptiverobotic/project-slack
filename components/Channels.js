@@ -46,12 +46,12 @@ var Channels = React.createClass({
   render: function() {
     var currentChannel = this.props.currentChannel;
     var channelList = [];
-    for (i=0; i < this.props.channels.length; i++ ) {
-      var channel = this.props.channels[i];
+    for (channel in this.props.channels) {
+      var unreadCount = this.props.channels[channel].unreadCount;
       channelList.push(
         <li key={channel} className={channel===  currentChannel ? 'channel active' : 'channel'} onClick={this.switchChannel.bind(this, channel)}>
             <a className="channel_name">
-                <span className="unread">0</span>
+                <span className={unreadCount == 0 ? 'hidden' : 'unread'} >{unreadCount}</span>
                 <span><span className="prefix">#</span>{channel}</span>
             </a>
         </li>
