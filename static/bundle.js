@@ -198,7 +198,7 @@ var Chat = React.createClass({displayName: "Chat",
                 React.createElement("div", {className: "channel-menu"}, 
                     React.createElement("span", {className: "channel-menu_name"}, 
                         React.createElement("span", {className: "channel-menu_prefix"}, "#"), 
-                        "general"
+                        this.state.currentChannel
                     )
                 )
             ), 

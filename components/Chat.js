@@ -112,7 +112,7 @@ var Chat = React.createClass({
                 <div className="channel-menu">
                     <span className="channel-menu_name">
                         <span className="channel-menu_prefix">#</span> 
-                        general
+                        {this.state.currentChannel}
                     </span>
                 </div>
             </div>
