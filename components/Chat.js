@@ -1,7 +1,8 @@
 var React = require('react');
 var ReactDOM = require('react-dom');
-var Messages = require('./Messages')
-var Channels = require('./Channels')
+var Messages = require('./Messages');
+var Channels = require('./Channels');
+var Users = require('./Users');
 
 var Modal = require('react-modal');
 const modalStyle = {
@@ -28,12 +29,7 @@ var Chat = React.createClass({
   },
 
   componentWillMount: function() {
-    this.pusher = new Pusher(PUSHER_CHAT_APP_KEY);
     this.chatRooms = {};
-  },
-
-  componentDidMount: function() {
-    this.createChannel(DEFAULT_CHANNEL);
   },
 
   componentDidUpdate: function() {
@@ -68,7 +64,7 @@ var Chat = React.createClass({
       });
 
       this.joinChannel(channelName);
-      this.chatRooms[channelName] = this.pusher.subscribe(channelName)
+      this.chatRooms[channelName] = this.pusher.subscribe("presence-" +channelName)
       this.chatRooms[channelName].bind('new_message', function(message) {
         var messages = this.state.messages;
         var channels = this.state.channels;
@@ -98,7 +94,17 @@ var Chat = React.createClass({
       newName = "anonymous" + randomId;
     }
 
+    $.ajax({
+      type: 'POST',
+      url: "/setname/",
+      data: { name: newName },
+      async: false,
+    });
+
+    this.pusher = new Pusher(PUSHER_CHAT_APP_KEY, { authEndpoint: '/pusher/auth/' });
     this.setState({ name: newName })
+    this.createChannel(DEFAULT_CHANNEL);
+    
   },
 
   onEnter: function(event) {
@@ -136,6 +142,9 @@ var Chat = React.createClass({
                     createChannel={this.createChannel} 
                     joinChannel={this.joinChannel}/>
                   <div className="listings_direct-messages"></div>
+                </div>
+                <div className="online-users">
+                  <Users />
                 </div>
                 <div className="message-history">
                   <Messages messages={this.state.messages[this.state.currentChannel]}/>
