@@ -27,24 +27,13 @@ var Chat = React.createClass({
     }
   },
 
+  componentWillMount: function() {
+    this.pusher = new Pusher(PUSHER_CHAT_APP_KEY);
+    this.chatRooms = {};
+  },
+
   componentDidMount: function() {
     this.createChannel(DEFAULT_CHANNEL);
-
-    var messages = {};
-    messages[DEFAULT_CHANNEL] = [{
-        name: 'CodeUpstart',
-        time: new Date(),
-        text: 'Hi there! 😘', 
-      },{
-        name: 'CodeUpstart',
-        time: new Date(),
-        text: 'Welcome to your chat app'
-      }];
-
-    this.setState({
-      messages: messages, 
-      currentChannel: DEFAULT_CHANNEL
-    });
   },
 
   componentDidUpdate: function() {
@@ -57,12 +46,12 @@ var Chat = React.createClass({
       var message = {
         name: this.state.name,
         text: text,
-        time: new Date()
+        channel: this.state.currentChannel,
       }
-      var messages = this.state.messages
-      messages[this.state.currentChannel].push(message);
-      this.setState({ messages: messages});
-      $('#msg-input').val("");
+
+      $.post('/messages/', message).success(function(){
+        $('#msg-input').val("");
+      });
     }
   },
 
@@ -75,7 +64,14 @@ var Chat = React.createClass({
         channels: this.state.channels.concat(channelName),
         messages: messages
       });
+
       this.joinChannel(channelName);
+      this.chatRooms[channelName] = this.pusher.subscribe(channelName)
+      this.chatRooms[channelName].bind('new_message', function(message) {
+        var messages = this.state.messages
+        messages[channelName].push(message);
+        this.setState({messages: messages});
+      }, this);
     }
   },
 

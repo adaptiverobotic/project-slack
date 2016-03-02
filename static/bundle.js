@@ -113,24 +113,13 @@ var Chat = React.createClass({displayName: "Chat",
     }
   },
 
+  componentWillMount: function() {
+    this.pusher = new Pusher(PUSHER_CHAT_APP_KEY);
+    this.chatRooms = {};
+  },
+
   componentDidMount: function() {
     this.createChannel(DEFAULT_CHANNEL);
-
-    var messages = {};
-    messages[DEFAULT_CHANNEL] = [{
-        name: 'CodeUpstart',
-        time: new Date(),
-        text: 'Hi there! 😘', 
-      },{
-        name: 'CodeUpstart',
-        time: new Date(),
-        text: 'Welcome to your chat app'
-      }];
-
-    this.setState({
-      messages: messages, 
-      currentChannel: DEFAULT_CHANNEL
-    });
   },
 
   componentDidUpdate: function() {
@@ -143,12 +132,12 @@ var Chat = React.createClass({displayName: "Chat",
       var message = {
         name: this.state.name,
         text: text,
-        time: new Date()
+        channel: this.state.currentChannel,
       }
-      var messages = this.state.messages
-      messages[this.state.currentChannel].push(message);
-      this.setState({ messages: messages});
-      $('#msg-input').val("");
+
+      $.post('/messages/', message).success(function(){
+        $('#msg-input').val("");
+      });
     }
   },
 
@@ -161,7 +150,14 @@ var Chat = React.createClass({displayName: "Chat",
         channels: this.state.channels.concat(channelName),
         messages: messages
       });
+
       this.joinChannel(channelName);
+      this.chatRooms[channelName] = this.pusher.subscribe(channelName)
+      this.chatRooms[channelName].bind('new_message', function(message) {
+        var messages = this.state.messages
+        messages[channelName].push(message);
+        this.setState({messages: messages});
+      }, this);
     }
   },
 
@@ -251,7 +247,7 @@ var Messages = React.createClass({displayName: "Messages",
         React.createElement("div", {key: i, className: "message"}, 
             React.createElement("a", {href: "https://twitter.com/"+message.name+"/", target: "_blank"}, React.createElement("img", {src: "https://twitter.com/"+message.name+"/profile_image", className: "message_profile-pic"})), 
             React.createElement("a", {href: "https://twitter.com/"+message.name+"/", target: "_blank", className: "message_username"}, message.name), 
-            React.createElement("span", {className: "message_timestamp"}, message.time.toLocaleTimeString(), " "), 
+            React.createElement("span", {className: "message_timestamp"}, new Date(message.time).toLocaleTimeString(), " "), 
             React.createElement("span", {className: "message_star"}), 
             React.createElement("span", {className: "message_content", dangerouslySetInnerHTML: {__html: text}})
         )
